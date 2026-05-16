@@ -46,6 +46,10 @@ up:
 down:
 	docker compose down
 
+seed:
+	@test -n "$$DB_PRIMARY_DSN" || (echo "DB_PRIMARY_DSN env が必要です" && exit 1)
+	go run ./cmd/seed
+
 migrate:
 	@test -n "$$DB_PRIMARY_DSN" || (echo "DB_PRIMARY_DSN env が必要です" && exit 1)
 	@for f in migrations/*.up.sql; do \
