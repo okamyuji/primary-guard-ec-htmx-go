@@ -1,0 +1,22 @@
+title = "primary-guard-ec-htmx-go gitleaks config"
+
+# 既定のgitleaksルールを継承します
+[extend]
+useDefault = true
+
+# テスト用ダミー値などgitleaksが誤検知しがちな箇所を許可します
+[allowlist]
+description = "テストフィクスチャや疑似値"
+paths = [
+    '''(?i)^(go\.sum)$''',
+    '''^migrations/0005_seed\.up\.sql$''',
+    '''^deploy/mysql/init/.+$''',
+    '''_test\.go$''',
+]
+
+regexes = [
+    '''X-User-Id:\s*\d+''',
+    '''replpass''',
+    '''rootpass''',
+    '''apppass''',
+]

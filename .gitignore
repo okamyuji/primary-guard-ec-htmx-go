@@ -1,0 +1,26 @@
+# Binaries
+bin/
+/server
+/worker
+
+# Build artifacts
+*.exe
+*.out
+coverage.out
+
+# Go modules
+vendor/
+
+# Editor files
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Local environment
+.env
+.env.local
+
+# Docker volumes
+docker-volumes/
