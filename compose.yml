@@ -1,0 +1,97 @@
+name: primary-guard-ec-htmx-go
+
+services:
+  mysql-primary:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: primaryguard
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    volumes:
+      - ./deploy/mysql/primary.cnf:/etc/mysql/conf.d/primary.cnf:ro
+      - ./deploy/mysql/init/primary:/docker-entrypoint-initdb.d:ro
+      - mysql-primary-data:/var/lib/mysql
+    ports:
+      - "3316:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  mysql-replica:
+    image: mysql:8.4
+    restart: unless-stopped
+    depends_on:
+      mysql-primary:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - ./deploy/mysql/replica.cnf:/etc/mysql/conf.d/replica.cnf:ro
+      - mysql-replica-data:/var/lib/mysql
+    ports:
+      - "3317:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  repl-setup:
+    image: mysql:8.4
+    depends_on:
+      mysql-primary:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        mysql -h mysql-replica -uroot -prootpass -e "STOP REPLICA; RESET REPLICA ALL;" || true
+        mysql -h mysql-replica -uroot -prootpass -e "
+        CHANGE REPLICATION SOURCE TO
+          SOURCE_HOST='mysql-primary',
+          SOURCE_PORT=3306,
+          SOURCE_USER='repl',
+          SOURCE_PASSWORD='replpass',
+          SOURCE_AUTO_POSITION=1,
+          GET_SOURCE_PUBLIC_KEY=1;
+        START REPLICA;
+        "
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mysql-primary:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+    environment:
+      APP_ADDR: ":8080"
+      DB_PRIMARY_DSN: "appuser:apppass@tcp(mysql-primary:3306)/primaryguard?parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci"
+      DB_REPLICA_DSN: "appuser:apppass@tcp(mysql-replica:3306)/primaryguard?parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci"
+    ports:
+      - "8080:8080"
+    entrypoint: ["/app/server"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mysql-primary:
+        condition: service_healthy
+    environment:
+      DB_PRIMARY_DSN: "appuser:apppass@tcp(mysql-primary:3306)/primaryguard?parseTime=true&loc=UTC&charset=utf8mb4&collation=utf8mb4_0900_ai_ci"
+    entrypoint: ["/app/worker"]
+
+volumes:
+  mysql-primary-data:
+  mysql-replica-data:

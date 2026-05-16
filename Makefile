@@ -50,7 +50,7 @@ migrate:
 	@test -n "$$DB_PRIMARY_DSN" || (echo "DB_PRIMARY_DSN env が必要です" && exit 1)
 	@for f in migrations/*.up.sql; do \
 		echo "applying $$f"; \
-		mysql --defaults-extra-file=<(printf "[client]\nuser=appuser\npassword=apppass\nhost=127.0.0.1\nport=3306\n") primaryguard < $$f || exit 1; \
+		mysql --defaults-extra-file=<(printf "[client]\nuser=appuser\npassword=apppass\nhost=127.0.0.1\nport=3316\n") primaryguard < $$f || exit 1; \
 	done
 
 repl-status:
