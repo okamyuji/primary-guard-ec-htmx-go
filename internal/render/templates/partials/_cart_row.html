@@ -1,0 +1,22 @@
+{{define "cart_row.html"}}
+<tr id="cart-row-{{.ProductID}}">
+  <td>{{.Name}}</td>
+  <td>{{yen .UnitPriceYen}}</td>
+  <td>
+    <form hx-post="/cart/update" hx-target="#cart-row-{{.ProductID}}" hx-swap="outerHTML" class="inline-form">
+      {{csrfField $.CSRFToken}}
+      <input type="hidden" name="product_id" value="{{.ProductID}}">
+      <input type="number" name="quantity" value="{{.Quantity}}" min="1" max="99">
+      <button type="submit">更新</button>
+    </form>
+  </td>
+  <td>{{yen .Subtotal}}</td>
+  <td>
+    <form hx-post="/cart/remove" hx-target="#cart-row-{{.ProductID}}" hx-swap="outerHTML" class="inline-form">
+      {{csrfField $.CSRFToken}}
+      <input type="hidden" name="product_id" value="{{.ProductID}}">
+      <button type="submit">削除</button>
+    </form>
+  </td>
+</tr>
+{{end}}

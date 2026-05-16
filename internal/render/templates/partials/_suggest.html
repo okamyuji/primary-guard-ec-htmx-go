@@ -1,0 +1,11 @@
+{{define "suggest.html"}}
+{{if .}}
+<ul class="suggest-list">
+{{range .}}
+<li><a href="/products/{{.ID}}">{{.Name}}</a></li>
+{{end}}
+</ul>
+{{else}}
+<p class="suggest-empty">該当する商品はありません</p>
+{{end}}
+{{end}}

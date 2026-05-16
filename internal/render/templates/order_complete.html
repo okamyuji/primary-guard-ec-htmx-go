@@ -1,0 +1,8 @@
+{{define "order_complete.html"}}{{template "layout_head.html" .}}
+<section class="order-complete">
+  <h1>注文ありがとうございます</h1>
+  <p class="notice">注文直後の表示は Primary を読み取り、しばらくしてから Replica に切り替わります</p>
+  {{template "order_summary.html" .}}
+  <p><a href="/orders">注文履歴を見る</a> / <a href="/">買い物を続ける</a></p>
+</section>
+{{template "layout_foot.html" .}}{{end}}

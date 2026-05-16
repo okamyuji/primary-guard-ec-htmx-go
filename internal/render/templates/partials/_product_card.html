@@ -1,0 +1,6 @@
+{{define "product_card.html"}}
+<article class="product-card">
+  <a href="/products/{{.ID}}" class="product-name">{{.Name}}</a>
+  <span class="product-price">{{yen .PriceYen}}</span>
+</article>
+{{end}}

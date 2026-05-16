@@ -1,0 +1,11 @@
+{{define "admin_login.html"}}{{template "layout_head.html" .}}
+<section class="auth-form">
+  <h1>管理者ログイン</h1>
+  <form method="post" action="/admin/login">
+    {{csrfField .CSRFToken}}
+    <label>メールアドレス<input type="email" name="email" required></label>
+    <label>パスワード<input type="password" name="password" required></label>
+    <button type="submit">管理画面へ</button>
+  </form>
+</section>
+{{template "layout_foot.html" .}}{{end}}

@@ -1,0 +1,22 @@
+{{define "cart.html"}}{{template "layout_head.html" .}}
+<section class="cart">
+  <h1>カート</h1>
+  {{if .Rows}}
+  <table class="cart-table">
+    <thead><tr><th>商品</th><th>単価</th><th>数量</th><th>小計</th><th></th></tr></thead>
+    <tbody>
+    {{range .Rows}}
+      {{template "cart_row.html" .}}
+    {{end}}
+    </tbody>
+  </table>
+  <p class="cart-total">合計 {{yen .Total}}</p>
+  <form method="post" action="/orders" class="cart-checkout">
+    {{csrfField .CSRFToken}}
+    <button type="submit">この内容で注文する</button>
+  </form>
+  {{else}}
+  <p>カートは空です。<a href="/">商品一覧</a>から追加してください</p>
+  {{end}}
+</section>
+{{template "layout_foot.html" .}}{{end}}

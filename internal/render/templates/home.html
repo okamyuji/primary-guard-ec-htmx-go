@@ -1,0 +1,24 @@
+{{define "home.html"}}{{template "layout_head.html" .}}
+<section class="home-search">
+  <input class="suggest-input" type="search" name="q" placeholder="商品を検索"
+    hx-get="/suggest" hx-target="#suggest-result" hx-trigger="keyup changed delay:200ms"
+    hx-swap="innerHTML">
+  <div id="suggest-result"></div>
+</section>
+
+<section class="home-list">
+  <h1>商品一覧</h1>
+  {{if .Degraded}}
+  <p class="notice">Replica が一時停止しているため一部表示を縮退しています</p>
+  {{end}}
+  <div class="product-grid">
+  {{range .Products}}
+    {{template "product_card.html" .}}
+  {{end}}
+  </div>
+  <nav class="pagination">
+    {{if gt .Page 1}}<a href="/?page={{sub .Page 1}}">前へ</a>{{end}}
+    {{if .HasNext}}<a href="/?page={{add .Page 1}}">次へ</a>{{end}}
+  </nav>
+</section>
+{{template "layout_foot.html" .}}{{end}}

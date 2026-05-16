@@ -1,0 +1,12 @@
+{{define "login.html"}}{{template "layout_head.html" .}}
+<section class="auth-form">
+  <h1>ログイン</h1>
+  <form method="post" action="/login">
+    {{csrfField .CSRFToken}}
+    <label>メールアドレス<input type="email" name="email" required></label>
+    <label>パスワード<input type="password" name="password" required></label>
+    <button type="submit">ログイン</button>
+  </form>
+  <p><a href="/register">新規登録はこちら</a></p>
+</section>
+{{template "layout_foot.html" .}}{{end}}

@@ -1,0 +1,20 @@
+{{define "admin_report.html"}}{{template "layout_head.html" .}}
+<section class="admin-report">
+  <h1>月次売上レポート</h1>
+  <p class="notice">このレポートは Replica と集計テーブル daily_sales_summary を読みます</p>
+  <table class="report-table">
+    <thead><tr><th>日付</th><th>件数</th><th>合計</th><th>更新</th></tr></thead>
+    <tbody>
+    {{range .Rows}}
+      <tr>
+        <td>{{datetime .Date}}</td>
+        <td>{{.TotalOrders}}</td>
+        <td>{{yen .TotalAmount}}</td>
+        <td>{{datetime .UpdatedAt}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{if not .Rows}}<p>対象期間のデータはまだありません</p>{{end}}
+</section>
+{{template "layout_foot.html" .}}{{end}}

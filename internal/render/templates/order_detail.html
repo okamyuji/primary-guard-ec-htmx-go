@@ -1,0 +1,7 @@
+{{define "order_detail.html"}}{{template "layout_head.html" .}}
+<section class="order-detail">
+  <h1>注文詳細</h1>
+  {{template "order_summary.html" .}}
+  <p><a href="/orders">注文履歴へ戻る</a></p>
+</section>
+{{template "layout_foot.html" .}}{{end}}

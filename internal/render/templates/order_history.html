@@ -1,0 +1,23 @@
+{{define "order_history.html"}}{{template "layout_head.html" .}}
+<section class="order-history">
+  <h1>注文履歴</h1>
+  {{if .Orders}}
+  <table class="order-history-table">
+    <thead><tr><th>注文番号</th><th>注文日</th><th>合計</th><th>状態</th><th></th></tr></thead>
+    <tbody>
+    {{range .Orders}}
+      <tr>
+        <td>#{{.ID}}</td>
+        <td>{{datetime .CreatedAt}}</td>
+        <td>{{yen .TotalYen}}</td>
+        <td>{{.Status}}</td>
+        <td><a href="/orders/{{.ID}}">詳細</a></td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p>注文履歴はまだありません</p>
+  {{end}}
+</section>
+{{template "layout_foot.html" .}}{{end}}

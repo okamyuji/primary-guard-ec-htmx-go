@@ -1,0 +1,21 @@
+{{define "order_summary.html"}}
+<section class="order-summary">
+  <h2>注文番号 #{{.Order.ID}}</h2>
+  <p>合計 {{yen .Order.TotalYen}}</p>
+  <p>状態 {{.Order.Status}}</p>
+  <table class="order-items">
+    <thead><tr><th>商品</th><th>数量</th><th>単価</th><th>小計</th></tr></thead>
+    <tbody>
+    {{range .Order.Items}}
+      <tr>
+        <td>{{.ProductName}}</td>
+        <td>{{.Quantity}}</td>
+        <td>{{yen .UnitPriceYen}}</td>
+        <td>{{yen .Subtotal}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  <p class="order-meta">注文日 {{datetime .Order.CreatedAt}}</p>
+</section>
+{{end}}

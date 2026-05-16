@@ -1,0 +1,31 @@
+{{define "layout_head.html"}}<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+<link rel="stylesheet" href="/static/styles.css">
+<script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="site-title" href="/">primary-guard-ec</a>
+  <nav class="site-nav">
+    <a href="/">商品</a>
+    {{if .UserID}}
+      <a href="/cart">カート</a>
+      <a href="/orders">注文履歴</a>
+      {{if .IsAdmin}}<a href="/admin/report">レポート</a>{{end}}
+      <form method="post" action="/logout" class="inline-form">
+        {{csrfField .CSRFToken}}<button type="submit">ログアウト</button>
+      </form>
+    {{else}}
+      <a href="/login">ログイン</a>
+      <a href="/register">新規登録</a>
+      <a href="/admin/login">管理者</a>
+    {{end}}
+  </nav>
+</header>
+<main class="site-main">
+{{if .Flash}}<div class="flash flash-{{.Flash.Kind}}">{{.Flash.Message}}</div>{{end}}
+{{end}}
