@@ -74,7 +74,8 @@ func Load() (Config, error) {
 		return Config{}, errors.New("DB_PRIMARY_DSN is required")
 	}
 	if cfg.ReplicaDSN == "" {
-		return Config{}, errors.New("DB_REPLICA_DSN is required")
+		// worker や seed のように Replica が必須でない処理のため、未設定時は Primary を流用する
+		cfg.ReplicaDSN = cfg.PrimaryDSN
 	}
 	return cfg, nil
 }

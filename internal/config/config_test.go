@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// TestLoadRequiresDSN DSN 未設定でエラーになることを確認する
+// TestLoadRequiresDSN Primary 未設定でエラーになることを確認する
 func TestLoadRequiresDSN(t *testing.T) {
 	t.Setenv("DB_PRIMARY_DSN", "")
 	t.Setenv("DB_REPLICA_DSN", "")
@@ -13,6 +13,20 @@ func TestLoadRequiresDSN(t *testing.T) {
 	_, err := Load()
 	if err == nil {
 		t.Fatal("err want non-nil")
+	}
+}
+
+// TestLoadReplicaFallsBackToPrimary Replica 未設定時は Primary が流用される
+func TestLoadReplicaFallsBackToPrimary(t *testing.T) {
+	t.Setenv("DB_PRIMARY_DSN", "primary-only")
+	t.Setenv("DB_REPLICA_DSN", "")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if cfg.ReplicaDSN != "primary-only" {
+		t.Fatalf("replica got %s want primary-only", cfg.ReplicaDSN)
 	}
 }
 

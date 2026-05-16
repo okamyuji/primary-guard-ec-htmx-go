@@ -34,6 +34,19 @@ func IssueCSRFCookie(w http.ResponseWriter, secure bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if err := WriteCSRFCookie(w, token, secure); err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+// WriteCSRFCookie 指定した token を CSRF Cookie として書き出す
+// セッション側の CSRF トークンと Cookie 側を一致させたい場合に呼ぶ
+// 空 token を渡したときは ErrCSRFEmptyToken を返す
+func WriteCSRFCookie(w http.ResponseWriter, token string, secure bool) error {
+	if token == "" {
+		return ErrCSRFEmptyToken
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     CSRFCookieName,
 		Value:    token,
@@ -42,8 +55,11 @@ func IssueCSRFCookie(w http.ResponseWriter, secure bool) (string, error) {
 		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
-	return token, nil
+	return nil
 }
+
+// ErrCSRFEmptyToken CSRF Cookie の書き出しに空トークンが渡された
+var ErrCSRFEmptyToken = errors.New("csrf token is empty")
 
 // ReadCSRFCookie Cookie から CSRF トークンを取り出す
 // Cookie が無いか空のとき errors.Is(err, ErrCSRFMissing) で判定できる

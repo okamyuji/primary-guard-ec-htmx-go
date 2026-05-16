@@ -12,6 +12,7 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/domain"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // ErrOrderNotFound 注文が見つからない
@@ -75,7 +76,7 @@ func (r *Repository) CreateOrder(ctx context.Context, userID int64) (domain.Orde
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback()
+			obs.RollbackAndLog(tx, "order create")
 		}
 	}()
 
@@ -201,7 +202,7 @@ func (r *Repository) FindOrder(ctx context.Context, orderID, userID int64) (doma
 	if err != nil {
 		return domain.Order{}, fmt.Errorf("find order items: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "order rows")
 	for rows.Next() {
 		var it domain.OrderItem
 		if err := rows.Scan(&it.ProductID, &it.ProductName, &it.Quantity, &it.UnitPriceYen); err != nil {
@@ -229,7 +230,7 @@ func (r *Repository) History(ctx context.Context, userID int64, limit int) ([]do
 	if err != nil {
 		return nil, fmt.Errorf("history: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "order rows")
 	out := make([]domain.Order, 0, limit)
 	for rows.Next() {
 		var o domain.Order

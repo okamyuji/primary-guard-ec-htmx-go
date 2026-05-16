@@ -11,6 +11,7 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/domain"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // Repository カートリポジトリ
@@ -85,7 +86,7 @@ func (r *Repository) List(ctx context.Context, userID int64) ([]domain.CartRow, 
 	if err != nil {
 		return nil, 0, fmt.Errorf("cart list: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "cart rows")
 	out := make([]domain.CartRow, 0, 16)
 	total := 0
 	for rows.Next() {

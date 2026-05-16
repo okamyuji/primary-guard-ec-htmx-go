@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // Handler 1 件のイベントを処理する関数型
@@ -68,7 +70,7 @@ func (w *Worker) tick(ctx context.Context) error {
 	committed := false
 	defer func() {
 		if !committed {
-			_ = tx.Rollback()
+			obs.RollbackAndLog(tx, "outbox worker tick")
 		}
 	}()
 

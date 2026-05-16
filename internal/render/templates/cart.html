@@ -2,6 +2,7 @@
 <section class="cart">
   <h1>カート</h1>
   {{if .Rows}}
+  <div class="table-wrap">
   <table class="cart-table">
     <thead><tr><th>商品</th><th>単価</th><th>数量</th><th>小計</th><th></th></tr></thead>
     <tbody>
@@ -10,6 +11,7 @@
     {{end}}
     </tbody>
   </table>
+  </div>
   <p class="cart-total">合計 {{yen .Total}}</p>
   <form method="post" action="/orders" class="cart-checkout">
     {{csrfField .CSRFToken}}

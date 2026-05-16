@@ -21,6 +21,7 @@ import (
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/inventory"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/migrate"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/order"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/outbox"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/render"
@@ -49,13 +50,13 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = primary.Close() }()
+	defer obs.CloseAndLog(primary, "primary db")
 
 	replica, err := openDB(cfg.ReplicaDSN, "replica", logger)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = replica.Close() }()
+	defer obs.CloseAndLog(replica, "replica db")
 
 	migrateCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
@@ -161,7 +162,7 @@ func openDB(dsn, label string, logger *slog.Logger) (*sql.DB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
-		_ = db.Close()
+		obs.CloseAndLog(db, "db ping failed")
 		return nil, err
 	}
 	logger.Info("db opened", "label", label)

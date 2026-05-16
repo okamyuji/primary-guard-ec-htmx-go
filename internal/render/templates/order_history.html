@@ -2,6 +2,7 @@
 <section class="order-history">
   <h1>注文履歴</h1>
   {{if .Orders}}
+  <div class="table-wrap">
   <table class="order-history-table">
     <thead><tr><th>注文番号</th><th>注文日</th><th>合計</th><th>状態</th><th></th></tr></thead>
     <tbody>
@@ -16,6 +17,7 @@
     {{end}}
     </tbody>
   </table>
+  </div>
   {{else}}
   <p>注文履歴はまだありません</p>
   {{end}}

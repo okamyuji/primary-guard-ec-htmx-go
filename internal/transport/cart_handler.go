@@ -9,7 +9,6 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/auth"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/cart"
-	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/domain"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/render"
 )
@@ -160,9 +159,6 @@ func (d *CartDeps) renderRow(w http.ResponseWriter, r *http.Request, uid, produc
 	}
 	w.WriteHeader(http.StatusOK)
 }
-
-// dbxAlias dbx 参照を保つためのエイリアス(未使用 import 抑止用)
-var _ = dbx.ForcePrimary
 
 // cartViewRow テンプレートに渡すカート行
 type cartViewRow struct {

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // Store outbox_events への書き込みと取り出しを行う
@@ -54,7 +55,7 @@ func (s *Store) Pending(ctx context.Context, tx *sql.Tx, limit int) ([]Event, er
 	if err != nil {
 		return nil, fmt.Errorf("outbox pending: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "outbox rows")
 	events := make([]Event, 0, limit)
 	for rows.Next() {
 		var e Event

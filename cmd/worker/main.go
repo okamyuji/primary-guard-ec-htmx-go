@@ -14,6 +14,7 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/config"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/outbox"
 )
 
@@ -37,7 +38,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = primary.Close() }()
+	defer obs.CloseAndLog(primary, "primary db")
 
 	router := dbx.New(primary, primary, nil)
 	store := outbox.NewStore(router)
@@ -67,7 +68,7 @@ func openPrimary(dsn string, logger *slog.Logger) (*sql.DB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
-		_ = db.Close()
+		obs.CloseAndLog(db, "primary db ping failed")
 		return nil, err
 	}
 	logger.Info("primary opened")

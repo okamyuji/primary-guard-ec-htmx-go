@@ -7,21 +7,26 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // ReplicaHealth Replica の遅延を定期的に確認し、しきい値超過で ReplicaState を Trip する
-// 復旧したら Reset する。中小規模 Web 向けの最小ヘルスチェック実装
+// 単発の計測エラーや一時的な遅延でフラップしないよう、連続失敗回数で Trip 判定をする
 type ReplicaHealth struct {
-	replica  *sql.DB
-	state    *ReplicaState
-	interval time.Duration
-	tripAt   time.Duration
-	logger   *slog.Logger
-	now      func() time.Time
+	replica       *sql.DB
+	state         *ReplicaState
+	interval      time.Duration
+	tripAt        time.Duration
+	tripAfterN    int
+	logger        *slog.Logger
+	now           func() time.Time
+	consecutiveNG int
 }
 
 // NewReplicaHealth 新しいヘルスチェッカを生成する
 // logger が nil なら slog.Default を使う
+// tripAfterN は連続して NG が続いた回数で Trip するしきい値 (1 以上)
 func NewReplicaHealth(replica *sql.DB, state *ReplicaState, interval, tripAt time.Duration, logger *slog.Logger) *ReplicaHealth {
 	if logger == nil {
 		logger = slog.Default()
@@ -33,12 +38,13 @@ func NewReplicaHealth(replica *sql.DB, state *ReplicaState, interval, tripAt tim
 		tripAt = 2 * time.Second
 	}
 	return &ReplicaHealth{
-		replica:  replica,
-		state:    state,
-		interval: interval,
-		tripAt:   tripAt,
-		logger:   logger,
-		now:      time.Now,
+		replica:    replica,
+		state:      state,
+		interval:   interval,
+		tripAt:     tripAt,
+		tripAfterN: 3,
+		logger:     logger,
+		now:        time.Now,
 	}
 }
 
@@ -59,23 +65,35 @@ func (h *ReplicaHealth) Run(ctx context.Context) {
 }
 
 // evaluate 1 回のチェックを行う
+// 連続失敗が tripAfterN を超えるまでは Trip しない (フラップ抑制)
+// 1 回でも成功すれば即 Reset し連続カウンタを 0 に戻す
 func (h *ReplicaHealth) evaluate(ctx context.Context) {
 	lag, err := h.checkLag(ctx)
 	if err != nil {
-		h.logger.Warn("replica lag check failed", "err", err)
-		h.state.Trip()
+		h.consecutiveNG++
+		h.logger.Warn("replica lag check failed", "err", err, "consecutive", h.consecutiveNG)
+		if h.consecutiveNG >= h.tripAfterN {
+			if !h.state.Down() {
+				h.logger.Warn("replica tripped by consecutive check failures", "n", h.consecutiveNG)
+			}
+			h.state.Trip()
+		}
 		return
 	}
 	if lag > h.tripAt {
-		if !h.state.Down() {
-			h.logger.Warn("replica tripped", "lag", lag.String(), "threshold", h.tripAt.String())
+		h.consecutiveNG++
+		if h.consecutiveNG >= h.tripAfterN {
+			if !h.state.Down() {
+				h.logger.Warn("replica tripped by lag", "lag", lag.String(), "threshold", h.tripAt.String())
+			}
+			h.state.Trip()
 		}
-		h.state.Trip()
 		return
 	}
 	if h.state.Down() {
 		h.logger.Info("replica recovered", "lag", lag.String())
 	}
+	h.consecutiveNG = 0
 	h.state.Reset()
 }
 
@@ -86,7 +104,7 @@ func (h *ReplicaHealth) checkLag(ctx context.Context) (time.Duration, error) {
 	if err != nil {
 		return 0, fmt.Errorf("show replica status: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "replica status rows")
 
 	cols, err := rows.Columns()
 	if err != nil {
@@ -119,9 +137,11 @@ func (h *ReplicaHealth) checkLag(ctx context.Context) (time.Duration, error) {
 	if ioRunning != "Yes" || sqlRunning != "Yes" {
 		return 0, fmt.Errorf("replica threads not running io=%s sql=%s", ioRunning, sqlRunning)
 	}
+	// Seconds_Behind_Source は Replica が追いついて Source の更新を待っている間 NULL になる
+	// IO と SQL が Yes でここまで来たので NULL は lag 0 とみなして安全に通す
 	secs, ok := asInt64(lookup("Seconds_Behind_Source"))
 	if !ok {
-		return 0, errors.New("seconds_behind_source is null")
+		return 0, nil
 	}
 	return time.Duration(secs) * time.Second, nil
 }

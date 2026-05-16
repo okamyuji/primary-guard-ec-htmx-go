@@ -8,6 +8,7 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/domain"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // Repository 商品リポジトリ
@@ -39,7 +40,7 @@ func (r *Repository) ListProducts(ctx context.Context, page, perPage int) ([]dom
 	if err != nil {
 		return nil, false, fmt.Errorf("list products: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "catalog rows")
 
 	products := make([]domain.Product, 0, perPage+1)
 	for rows.Next() {
@@ -98,7 +99,7 @@ func (r *Repository) Suggest(ctx context.Context, query string, limit int) ([]do
 	if err != nil {
 		return nil, fmt.Errorf("suggest: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "catalog rows")
 
 	products := make([]domain.Product, 0, limit)
 	for rows.Next() {
@@ -121,7 +122,7 @@ func (r *Repository) ListCategories(ctx context.Context) ([]domain.Category, err
 	if err != nil {
 		return nil, fmt.Errorf("list categories: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "catalog rows")
 
 	categories := make([]domain.Category, 0, 32)
 	for rows.Next() {

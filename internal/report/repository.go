@@ -8,6 +8,7 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/domain"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // Repository レポートリポジトリ
@@ -33,7 +34,7 @@ func (r *Repository) Monthly(ctx context.Context, year int, month time.Month) ([
 	if err != nil {
 		return nil, fmt.Errorf("monthly: %w", err)
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "report rows")
 	out := make([]domain.DailySalesSummary, 0, 31)
 	for rows.Next() {
 		var s domain.DailySalesSummary

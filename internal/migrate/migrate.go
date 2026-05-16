@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 )
 
 // Apply dir 配下の *.up.sql を名前順で適用する
@@ -84,7 +86,7 @@ func loadApplied(ctx context.Context, db *sql.DB) (map[string]bool, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = rows.Close() }()
+	defer obs.CloseAndLog(rows, "migrate rows")
 	applied := make(map[string]bool)
 	for rows.Next() {
 		var name string

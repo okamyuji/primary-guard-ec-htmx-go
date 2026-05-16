@@ -150,8 +150,9 @@ func (d *AuthDeps) startSession(w http.ResponseWriter, r *http.Request, userID i
 		return
 	}
 	auth.IssueSessionCookie(w, sess.ID, sess.ExpiresAt, d.SecureCookie)
-	if _, err := auth.IssueCSRFCookie(w, d.SecureCookie); err != nil {
-		http.Error(w, "CSRFトークンの発行に失敗しました", http.StatusInternalServerError)
+	// セッション内 CSRF トークンと Cookie 側を一致させる
+	if err := auth.WriteCSRFCookie(w, sess.CSRFToken, d.SecureCookie); err != nil {
+		http.Error(w, "CSRF Cookie の書き出しに失敗しました", http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, redirectTo, http.StatusFound)

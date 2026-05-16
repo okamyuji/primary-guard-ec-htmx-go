@@ -15,6 +15,7 @@ import (
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/config"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/dbx"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/user"
 )
 
@@ -37,7 +38,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = db.Close() }()
+	defer obs.CloseAndLog(db, "seed db")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/auth"
+	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/obs"
 	"github.com/okamyuji/primary-guard-ec-htmx-go/internal/static"
 )
 
@@ -77,7 +78,5 @@ func (s *Server) NewServer(addr string) *http.Server {
 // healthz 動作確認用のヘルスチェック
 func healthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte("ok")); err != nil {
-		slog.Default().Warn("healthz write failed", "err", err)
-	}
+	obs.WriteAndLog(w, []byte("ok"), "healthz")
 }
