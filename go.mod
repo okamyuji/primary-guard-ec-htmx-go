@@ -1,6 +1,6 @@
 module github.com/okamyuji/primary-guard-ec-htmx-go
 
-go 1.26.3
+go 1.25.0
 
 require (
 	github.com/go-sql-driver/mysql v1.10.0
