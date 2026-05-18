@@ -1,6 +1,6 @@
 # primary-guard-ec-htmx-go
 
-Zenn 記事「[OpenAIの規模ではなくてもRDB設計はPrimaryを守る考え方でだいたい対応できる](https://zenn.dev/okamyuji/articles/mysql-read-replica-write-ahead-htmx-go)」のサンプル実装です。
+Zenn 記事「[OpenAIほどの規模ではなくてもRDB設計はPrimaryを守る考え方でだいたい対応できる](https://zenn.dev/okamyuji/articles/mysql-read-replica-write-ahead-htmx-go)」のサンプル実装です。
 
 MySQL の Primary と Read Replica の実レプリケーション環境で動く EC アプリを、Go の標準ライブラリと HTMX で組んでいます。記事に登場する判断軸 (Reader と Writer の分離、read-after-write、cache stampede 抑制、outbox、集計テーブル、縮退運転、Cookie セッションと CSRF) を、すべて動くコードと統合テストで再現しています。
 
